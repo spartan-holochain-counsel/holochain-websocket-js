@@ -3,9 +3,9 @@
 # Holochain Client
 A Javascript library for communicating with [Holochain](https://holochain.org)'s Websocket API
 
-[![](https://img.shields.io/github/issues-raw/mjbrisebois/js-holochain-websocket?style=flat-square)](https://github.com/mjbrisebois/js-holochain-websocket/issues)
-[![](https://img.shields.io/github/issues-closed-raw/mjbrisebois/js-holochain-websocket?style=flat-square)](https://github.com/mjbrisebois/js-holochain-websocket/issues?q=is%3Aissue+is%3Aclosed)
-[![](https://img.shields.io/github/issues-pr-raw/mjbrisebois/js-holochain-websocket?style=flat-square)](https://github.com/mjbrisebois/js-holochain-websocket/pulls)
+[![](https://img.shields.io/github/issues-raw/mjbrisebois/holochain-websocket-js?style=flat-square)](https://github.com/mjbrisebois/holochain-websocket-js/issues)
+[![](https://img.shields.io/github/issues-closed-raw/mjbrisebois/holochain-websocket-js?style=flat-square)](https://github.com/mjbrisebois/holochain-websocket-js/issues?q=is%3Aissue+is%3Aclosed)
+[![](https://img.shields.io/github/issues-pr-raw/mjbrisebois/holochain-websocket-js?style=flat-square)](https://github.com/mjbrisebois/holochain-websocket-js/pulls)
 
 
 ## Overview
