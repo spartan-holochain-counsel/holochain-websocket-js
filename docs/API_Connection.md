@@ -9,6 +9,7 @@ A class for communicating with Holochain Conductor's WebSocket.
 - `address` - (*required*) either a *number* or a *string*
   - *number* - the TCP port for WebSocket connection to Conductor API
   - *string* - the TCP address for WebSocket connection to Conductor API
+  - *WebSocket* - existing WebSocket instance
 - `options` - optional parameters
 - `options.name` - a unique name for this Connection instance
   - defaults to the connection counter
