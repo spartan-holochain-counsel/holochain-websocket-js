@@ -14,8 +14,8 @@ MOCHA_OPTS		= -t 15000
 #
 # Testing
 #
-test:				test-integration
-test-debug:			test-integration-debug
+test:				test-integration	test-e2e
+test-debug:			test-integration-debug	test-e2e-debug
 
 test-integration:		build
 	LOG_LEVEL=warn npx mocha $(MOCHA_OPTS) ./tests/integration
@@ -23,6 +23,14 @@ test-integration-debug:		build
 	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/integration
 test-integration-debug-%:	build
 	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/integration/test_$*.js
+
+test-e2e:		prepare-package build
+	LOG_LEVEL=warn npx mocha $(MOCHA_OPTS) ./tests/e2e
+test-e2e-debug:		prepare-package build
+	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/e2e
+test-e2e-debug-%:	prepare-package build
+	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/e2e/test_$*.js
+
 test-server:
 	python3 -m http.server 8765
 

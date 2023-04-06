@@ -38,7 +38,7 @@ const conn = new Connection( admin_interface_port );
 #### Example
 
 ```javascript
-let agent_hash = new HoloHash( await conn.request("generate_agent_pub_key") );
+let agent_hash = await conn.request("generate_agent_pub_key");
 ```
 
 

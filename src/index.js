@@ -62,6 +62,15 @@ export class Connection {
 
 	this.options			= Object.assign( {}, DEFAULT_CONNECTION_OPTIONS, options );
 
+	this._opened			= false;
+	this._closed			= false;
+
+	this._conn_id			= connection_id++;
+	this.name			= this.options.name ? `${this._conn_id}:` + this.options.name : String( this._conn_id );
+
+	this._msg_count			= 0;
+	this._pending			= {};
+
 	const uri_scheme		= this.options.secure === true ? "wss://" : "ws://";
 	// `address` could be
 	//
@@ -72,79 +81,88 @@ export class Connection {
 	// Where the scheme will be prepended for 1 and 2 as "ws://"
 	// - or "wss://" if options.secure is true)
 	//
-	if ( typeof address === "number" ) {
-	    if ( ! (address > 0 && address < 65_536) )
-		throw new SyntaxError(`Invalid port: ${address}; must be between 1..65536`);
-
-	    this._uri			= uri_scheme + `${this.options.host}:${address}`;
-	}
-	else if ( typeof address === "string" ) {
-	    if ( uri_scheme_regexp.test( address ) )
-		this._uri		= address;
-	    else
-		this._uri		= uri_scheme + address;
-	}
-	else
-	    throw new TypeError(`Invalid address input: ${typeof address}; expected number or string`);
-
-	new URL( this._uri ); // Check if valid URI
-
-	this._conn_id			= connection_id++;
-	this.name			= this.options.name ? `${this._conn_id}:` + this.options.name : String( this._conn_id );
-
-	this._msg_count			= 0;
-	this._pending			= {};
 	this._socket			= null;
+	this._new_socket		= false;
 
-	this._opened			= false;
+	if ( address instanceof WebSocket ) {
+	    this._socket		= address;
+	    this._uri			= this._socket.url;
+
+	    // check websocket binarytype
+	    if ( this._socket.binaryType !== "arraybuffer" )
+		throw new TypeError(`The given WebSocket connection must have 'binaryType' set to 'arraybuffer'; not '${this._socket.binaryType}'`);
+	}
+	else {
+	    if ( typeof address === "number" ) {
+		if ( ! (address > 0 && address < 65_536) )
+		    throw new SyntaxError(`Invalid port: ${address}; must be between 1..65536`);
+
+		this._uri			= uri_scheme + `${this.options.host}:${address}`;
+	    }
+	    else if ( typeof address === "string" ) {
+		if ( uri_scheme_regexp.test( address ) )
+		    this._uri		= address;
+		else
+		    this._uri		= uri_scheme + address;
+	    }
+	    else
+		throw new TypeError(`Invalid address input: ${typeof address}; expected number or string`);
+
+	    new URL( this._uri ); // Check if valid URI
+
+	    try {
+		log.debug && this._log("Opening connection to: %s", this._uri );
+
+		this._new_socket	= true;
+		this._socket		= new WebSocket( this._uri );
+		this._socket.binaryType	= "arraybuffer";
+
+		log.debug && this._log("Initialized new Connection()");
+	    } catch (err) {
+		console.error(err);
+		this._open_r(err);
+	    }
+	}
+
 	this._open			= new Promise( (f,r) => {
 	    this._open_f		= f;
 	    this._open_r		= r;
 	});
 
-	this._closed			= false;
 	this._close			= new Promise( f => {
 	    this._close_f		= f;
 	});
 
 	const open_error		= new Error("");
-	try {
-	    log.debug && this._log("Opening connection to: %s", this._uri );
-	    this._socket		= new WebSocket( this._uri );
-	    this._socket.binaryType	= "arraybuffer";
 
-	    this._socket.onerror	= ( event ) => {
-		if ( this._opened === false ) {
-		    open_error.message	= `Failed to open WebSocket(${event.target.url}): ${event.message}`;
-		    this._open_r( open_error );
-		}
-		else {
-		    console.error(`${this} socket error:`, event.error );
-		    // this.emit("error", event.error );
-		}
-	    };
+	this._socket.onerror		= ( event ) => {
+	    if ( this._opened === false ) {
+		open_error.message	= `Failed to open WebSocket(${event.target.url}): ${event.message}`;
+		this._open_r( open_error );
+	    }
+	    else {
+		console.error(`${this} socket error:`, event.error );
+		// this.emit("error", event.error );
+	    }
+	};
 
-	    this._socket.onopen		= () => {
-		log.debug && this._log("Received 'open' event");
-		this._opened		= true;
-		this._open_f();
-	    };
+	this._socket.onopen		= () => {
+	    log.debug && this._log("Received 'open' event");
+	    this._opened		= true;
+	    this._open_f();
+	};
+	if ( this._socket.readyState === this._socket.OPEN )
+	    this._open_f();
 
-	    this._socket.onclose	= ( event ) => {
-		log.debug && this._log("Received 'close' event (code: %s): %s", event.code, event.reason );
-		this._closed		= true;
-		this._close_f( event.code );
-	    };
+	this._socket.onclose		= ( event ) => {
+	    log.debug && this._log("Received 'close' event (code: %s): %s", event.code, event.reason );
+	    this._closed		= true;
+	    this._close_f( event.code );
+	};
 
-	    this._socket.onmessage	= ( event ) => {
-		this._message_handler( event.data );
-	    };
-	} catch (err) {
-	    console.error(err);
-	    this._open_r(err);
-	}
-
-	log.debug && this._log("Initialized new Connection()");
+	this._socket.onmessage		= ( event ) => {
+	    this._message_handler( event.data );
+	};
     }
 
     open ( timeout ) {
@@ -155,6 +173,9 @@ export class Connection {
     }
 
     close ( timeout ) {
+	if ( this._new_socket === false )
+	    throw new Error(`The WebSocket was not created by this Connection instance`);
+
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;
 
@@ -164,7 +185,7 @@ export class Connection {
 	return new PromiseTimeout( this._close.then.bind(this._close), timeout, "close WebSocket" );
     }
 
-    send ( type, payload, id ) {
+    async send ( type, payload, id ) {
 	if ( this._socket === null )
 	    throw new Error(`Cannot send message until socket is open: ${this}`);
 
@@ -180,7 +201,8 @@ export class Connection {
 
 	log.debug && this._log("Ready state '%s'", this._socket.readyState );
 	if ( this._socket.readyState !== this._socket.OPEN ) {
-	    throw new Error(`${this} => Socket is not open`);
+	    await this.open();
+	    // throw new Error(`${this} => Socket is not open`);
 	}
 
 	this._socket.send( packed_msg );
@@ -208,7 +230,7 @@ export class Connection {
 		stack,
 	    };
 
-	    this.send( "request", payload, id );
+	    this.send( "request", payload, id ).catch(r);
 	}, timeout, `get response for request '${method}'` );
     }
 
