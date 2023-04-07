@@ -365,3 +365,21 @@ export {
 
     MsgPack,
 };
+
+export default {
+    Connection,
+
+    PromiseTimeout,
+    TimeoutError,
+
+    HolochainClientError,
+    ConductorError,
+    DeserializationError,
+    DnaReadError,
+    RibosomeError,
+    RibosomeDeserializeError,
+    ActivateAppError,
+    ZomeCallUnauthorizedError,
+
+    MsgPack,
+};

@@ -9,6 +9,13 @@ node_modules:		package-lock.json
 	touch $@
 build:			node_modules
 
+use-local-backdrop:
+	cd tests; npm uninstall @whi/holochain-backdrop
+	cd tests; npm install --save-dev ../../node-holochain-backdrop/
+use-npm-backdrop:
+	cd tests; npm uninstall @whi/holochain-backdrop
+	cd tests; npm install --save-dev @whi/holochain-backdrop
+
 
 MOCHA_OPTS		= -t 15000
 #
