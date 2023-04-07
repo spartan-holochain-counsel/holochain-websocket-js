@@ -17,9 +17,8 @@ const { HoloHash,
 import { Holochain }			from '@whi/holochain-backdrop';
 
 import { expect_reject }		from './utils.js';
-import { Connection,
-	 DeserializationError,
-	 TimeoutError }			from '../../src/node.js';
+import HolochainWebsocket		from '../../src/node.js';
+import { Connection }			from '../../src/node.js';
 
 
 const TEST_HAPP_PATH			= new URL( "../packs/storage.happ", import.meta.url ).pathname;
@@ -149,7 +148,7 @@ function errors_tests () {
 	    } finally {
 		await conn.close();
 	    }
-	}, TimeoutError );
+	}, HolochainWebsocket.TimeoutError );
     });
 
     it("should call invalid API method", async function () {
@@ -157,7 +156,7 @@ function errors_tests () {
 
 	await expect_reject( async () => {
 	    await conn.request("invalid_api_endpoint");
-	}, DeserializationError, "expected one of" );
+	}, HolochainWebsocket.DeserializationError, "expected one of" );
     });
 
     // Connection: undefined payload for type Request

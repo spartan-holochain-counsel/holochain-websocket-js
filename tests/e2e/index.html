@@ -1,8 +1,11 @@
 <html>
     <head>
 	<script type="module">
+	    import HolochainWebsocket from '../../dist/holochain-websocket.js';
 	    import { Connection } from '../../dist/holochain-websocket.js';
-	    window.Connection = Connection;
+
+	    window.HolochainWebsocket	= HolochainWebsocket;
+	    window.Connection		= Connection;
 	</script>
     </head>
 </html>
