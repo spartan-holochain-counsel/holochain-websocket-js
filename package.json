@@ -1,6 +1,6 @@
 {
   "name": "@whi/holochain-websocket",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A Javascript library for communicating with Holochain's Websocket API",
   "type": "module",
   "main": "src/node.js",
