@@ -2,23 +2,6 @@
 import {
     encode,
     decode,
-    decodeMulti,
-    decodeAsync,
-    decodeArrayStream,
-    decodeMultiStream,
-    decodeStream,
-    Decoder,
-    DecodeError,
-    DataViewIndexOutOfBoundsError,
-    Encoder,
-    ExtensionCodec,
-    ExtData,
-    EXT_TIMESTAMP,
-    encodeDateToTimeSpec,
-    encodeTimeSpecToTimestamp,
-    decodeTimestampToTimeSpec,
-    encodeTimestampExtension,
-    decodeTimestampExtension
 }					from '@msgpack/msgpack';
 import PromiseTimeoutLib		from '@whi/promise-timeout';
 
@@ -328,28 +311,6 @@ export class Connection {
 set_tostringtag( Connection, "Connection" );
 
 
-const MsgPack				= {
-    encode,
-    decode,
-    decodeMulti,
-    decodeAsync,
-    decodeArrayStream,
-    decodeMultiStream,
-    decodeStream,
-    Decoder,
-    DecodeError,
-    DataViewIndexOutOfBoundsError,
-    Encoder,
-    ExtensionCodec,
-    ExtData,
-    EXT_TIMESTAMP,
-    encodeDateToTimeSpec,
-    encodeTimeSpecToTimestamp,
-    decodeTimestampToTimeSpec,
-    encodeTimestampExtension,
-    decodeTimestampExtension,
-};
-
 export {
     PromiseTimeout,
     TimeoutError,
@@ -362,8 +323,6 @@ export {
     RibosomeDeserializeError,
     ActivateAppError,
     ZomeCallUnauthorizedError,
-
-    MsgPack,
 };
 
 export default {
@@ -380,6 +339,4 @@ export default {
     RibosomeDeserializeError,
     ActivateAppError,
     ZomeCallUnauthorizedError,
-
-    MsgPack,
 };
