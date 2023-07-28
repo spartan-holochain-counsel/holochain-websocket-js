@@ -9,7 +9,7 @@ import { expect }			from 'chai';
 import puppeteer			from 'puppeteer';
 import http				from '@whi/http';
 
-import { Holochain }			from '@whi/holochain-backdrop';
+import { Holochain }			from '@spartan-hc/holochain-backdrop';
 
 
 const HTTP_PORT				= 2222;

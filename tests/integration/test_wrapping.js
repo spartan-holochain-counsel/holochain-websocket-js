@@ -9,12 +9,10 @@ import nacl				from 'tweetnacl';
 
 import { encode, decode }		from '@msgpack/msgpack';
 import { hashZomeCall }			from '@holochain/serialization';
-import HoloHashLib			from '@whi/holo-hash';
+import { HoloHash,
+	 AgentPubKey }			from '@spartan-hc/holo-hash';
 
-const { HoloHash,
-	AgentPubKey }			= HoloHashLib;
-
-import { Holochain }			from '@whi/holochain-backdrop';
+import { Holochain }			from '@spartan-hc/holochain-backdrop';
 
 import { expect_reject }		from './utils.js';
 import { Connection,

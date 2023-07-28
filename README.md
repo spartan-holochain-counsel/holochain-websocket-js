@@ -1,11 +1,11 @@
-[![](https://img.shields.io/npm/v/@whi/holochain-websocket/latest?style=flat-square)](http://npmjs.com/package/@whi/holochain-websocket)
+[![](https://img.shields.io/npm/v/@spartan-hc/holochain-websocket/latest?style=flat-square)](http://npmjs.com/package/@spartan-hc/holochain-websocket)
 
 # Holochain Client
 A Javascript library for communicating with [Holochain](https://holochain.org)'s Websocket API
 
-[![](https://img.shields.io/github/issues-raw/mjbrisebois/holochain-websocket-js?style=flat-square)](https://github.com/mjbrisebois/holochain-websocket-js/issues)
-[![](https://img.shields.io/github/issues-closed-raw/mjbrisebois/holochain-websocket-js?style=flat-square)](https://github.com/mjbrisebois/holochain-websocket-js/issues?q=is%3Aissue+is%3Aclosed)
-[![](https://img.shields.io/github/issues-pr-raw/mjbrisebois/holochain-websocket-js?style=flat-square)](https://github.com/mjbrisebois/holochain-websocket-js/pulls)
+[![](https://img.shields.io/github/issues-raw/spartan-holochain-counsel/holochain-websocket-js?style=flat-square)](https://github.com/spartan-holochain-counsel/holochain-websocket-js/issues)
+[![](https://img.shields.io/github/issues-closed-raw/spartan-holochain-counsel/holochain-websocket-js?style=flat-square)](https://github.com/spartan-holochain-counsel/holochain-websocket-js/issues?q=is%3Aissue+is%3Aclosed)
+[![](https://img.shields.io/github/issues-pr-raw/spartan-holochain-counsel/holochain-websocket-js?style=flat-square)](https://github.com/spartan-holochain-counsel/holochain-websocket-js/pulls)
 
 
 ## Overview
@@ -19,7 +19,7 @@ A Javascript library for communicating with [Holochain](https://holochain.org)'s
 ## Install
 
 ```bash
-npm i @whi/holochain-websocket
+npm i @spartan-hc/holochain-websocket
 ```
 
 ## Basic Usage
@@ -28,7 +28,7 @@ npm i @whi/holochain-websocket
 
 Each example assumes this code is present
 ```javascript
-import { Connection } from '@whi/holochain-websocket';
+import { Connection } from '@spartan-hc/holochain-websocket';
 
 const admin_interface_port = 45678;
 

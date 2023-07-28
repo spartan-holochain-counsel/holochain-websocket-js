@@ -1,5 +1,5 @@
 {
-  "name": "@whi/holochain-websocket",
+  "name": "@spartan-hc/holochain-websocket",
   "version": "0.1.6",
   "description": "A Javascript library for communicating with Holochain's Websocket API",
   "type": "module",
@@ -22,7 +22,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mjbrisebois/holochain-websocket-js/"
+    "url": "https://github.com/spartan-holochain-counsel/holochain-websocket-js/"
   },
   "dependencies": {
     "@msgpack/msgpack": "^2.7.0",
@@ -31,7 +31,8 @@
   },
   "devDependencies": {
     "@holochain/serialization": "0.1.0-beta-rc.3",
-    "@whi/holochain-backdrop": "^2.0.1",
+    "@spartan-hc/holo-hash": "^0.5.4",
+    "@spartan-hc/holochain-backdrop": "^2.2.2",
     "@whi/http": "^0.2.3",
     "@whi/json": "^0.1.3",
     "@whi/weblogger": "^0.1.6",

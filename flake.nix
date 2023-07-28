@@ -1,13 +1,15 @@
 {
-  description = "Holochain Development Env for v0.2.0-beta-rc.1";
+  description = "Holochain Development Env";
 
   inputs = {
     nixpkgs.follows = "holochain-flake/nixpkgs";
+    flake-parts.follows = "holochain-flake/flake-parts";
+    holochain-nix-versions.url  = "github:holochain/holochain/?dir=versions/0_2";
 
     holochain-flake = {
       url = "github:holochain/holochain";
-      inputs.versions.url = "github:holochain/holochain/?dir=versions/0_1";
-      inputs.holochain.url = "github:holochain/holochain/holochain-0.2.0-beta-rc.1";
+      inputs.holochain.url = "github:holochain/holochain/holochain-0.2.1";
+      inputs.lair.url = "github:holochain/lair/lair_keystore-v0.2.4";
     };
   };
 
