@@ -30,6 +30,12 @@ import {
 
 const uri_scheme_regexp			= /^[A-Za-z0-9.\-+]+\:\/\//;
 
+const WEBSOCKET_READY_STATES		= {
+    "0": "CONNECTING",
+    "1": "OPEN",
+    "2": "CLOSING",
+    "3": "CLOSED",
+};
 const DEFAULT_CONNECTION_OPTIONS	= {
     "timeout": 15_000,
     "host": "127.0.0.1",
@@ -146,6 +152,34 @@ export class Connection {
 	this._socket.onmessage		= ( event ) => {
 	    this._message_handler( event.data );
 	};
+    }
+
+    get id () {
+	return this._conn_id;
+    }
+
+    get uri () {
+	return this._uri;
+    }
+
+    get readyState () {
+	return this._socket.readyState;
+    }
+
+    get state () {
+	return WEBSOCKET_READY_STATES[ this.readyState ];
+    }
+
+    get sharedSocket () {
+	return this._new_socket === false;
+    }
+
+    get messageCount () {
+	return this._msg_count;
+    }
+
+    get pendingCount () {
+	return Object.keys( this._pending ).length;
     }
 
     open ( timeout ) {

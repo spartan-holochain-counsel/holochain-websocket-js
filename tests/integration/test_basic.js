@@ -22,13 +22,23 @@ import { Connection }			from '../../src/node.js';
 const TEST_HAPP_PATH			= new URL( "../packs/storage.happ", import.meta.url ).pathname;
 const TEST_APP_ID			= "test-app";
 
-let conn;
+let conn, admin_port;
 let dna_hash;
 let agent_hash;
 let app_port;
 
 
 function connection_tests () {
+    it("should check inspection methods", async function () {
+	expect( conn.id			).to.equal( 0 );
+	expect( conn.uri		).to.equal( `ws://127.0.0.1:${admin_port}` );
+	expect( conn.readyState		).to.equal( 1 );
+	expect( conn.state		).to.equal( "OPEN" );
+	expect( conn.sharedSocket	).to.be.false;
+	expect( conn.messageCount	).to.equal( 0 );
+	expect( conn.pendingCount	).to.equal( 0 );
+    });
+
     it("should call admin API method", async function () {
 	log.trace("Sending 'attach app interface'");
 	let resp			= await conn.request("attach_app_interface", {} );
@@ -167,8 +177,8 @@ describe("Integration: Connection", () => {
 	conductor			= new Holochain();
 	await conductor.start();
 
-	const port			= conductor.adminPorts()[0];
-	conn				= new Connection( port );
+	admin_port			= conductor.adminPorts()[0];
+	conn				= new Connection( admin_port );
 
 	await conn.open();
 	log.trace("%s => Connection is open", conn.toString() );
