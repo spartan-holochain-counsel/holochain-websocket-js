@@ -1,8 +1,13 @@
 
+import Emittery				from 'emittery';
 import {
     encode,
     decode,
 }					from '@msgpack/msgpack';
+import {
+    DnaHash,
+    AgentPubKey,
+}					from '@spartan-hc/holo-hash';
 import PromiseTimeoutLib		from '@whi/promise-timeout';
 
 const { PromiseTimeout,
@@ -44,10 +49,12 @@ const DEFAULT_CONNECTION_OPTIONS	= {
 
 let connection_id			= 0;
 
-export class Connection {
+export class Connection extends Emittery {
     constructor ( address, options = {} ) {
 	if ( address instanceof Connection )
 	    return address;
+
+	super();
 
 	this.options			= Object.assign( {}, DEFAULT_CONNECTION_OPTIONS, options );
 
@@ -271,6 +278,41 @@ export class Connection {
 	} catch (err) {
 	    console.error(err);
 	}
+    }
+
+    async _handle_signal ( message ) {
+	const payload			= decode( message.data );
+	// console.log( payload );
+
+	if ( payload.System ) {
+	    // Do nothing...
+	    return;
+	}
+	else if ( !payload.App )
+	    throw new TypeError(`Unknown signal type [${Object.keys(payload).join(", ")}]`);
+
+	// console.log( payload );
+	const app_signal		= payload.App;
+
+	const cell_id			= app_signal.cell_id;
+	const zome_name			= app_signal.zome_name;
+	const signal			= decode( app_signal.signal );
+	// console.log( signal );
+
+	const sig_type			= signal.type;
+	delete signal.type;
+
+	// console.log("Emit 'signal:%s'", sig_type );
+	this.emit("signal", {
+	    "agent":		new AgentPubKey( cell_id[1] ),
+	    "dna":		new DnaHash( cell_id[0] ),
+	    "zome":		zome_name,
+	    "message":		app_signal.signal,
+	    "signal":{
+		"type":		sig_type,
+		"data":		signal,
+	    },
+	});
     }
 
     async _handle_response ( response ) {

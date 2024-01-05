@@ -26,12 +26,12 @@
   },
   "dependencies": {
     "@msgpack/msgpack": "^2.7.0",
+    "@spartan-hc/holo-hash": "^0.5.4",
     "@whi/promise-timeout": "^0.1.1",
-    "ws": "^8.0.0"
+    "emittery": "^1.0.1"
   },
   "devDependencies": {
     "@holochain/serialization": "0.1.0-beta-rc.3",
-    "@spartan-hc/holo-hash": "^0.5.4",
     "@spartan-hc/holochain-backdrop": "^2.2.2",
     "@whi/http": "^0.2.3",
     "@whi/json": "^0.1.3",
