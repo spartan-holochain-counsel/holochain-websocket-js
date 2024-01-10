@@ -237,7 +237,7 @@ export class Connection extends Emittery {
 	    timeout			= this.options.timeout;
 
 	const payload			= {
-	    "type": method,
+	    "type": { [method]: null },
 	    "data": args,
 	};
 
@@ -333,31 +333,31 @@ export class Connection extends Emittery {
 	const payload			= decode( response.data );
 	log.debug && this._log("Response payload type '%s': { %s }", payload.type, Object.keys(payload).join(", ") );
 
-	if ( payload.type === "error" ) {
+	if ( "error" in payload.type ) {
 	    const type			= payload.data.type;
 	    const message		= payload.data.data;
 	    log.debug && this._log("Response error type '%s': { %s }", type, Object.keys(payload.data).join(", ") );
 
 	    let err			= new Error( message );
-	    if ( type === "internal_error" ) {
+	    if ( "internal_error" in type ) {
 		err			= new ConductorError( message );
 	    }
-	    else if ( type === "deserialization" ) {
+	    else if ( "deserialization" in type ) {
 		err			= new DeserializationError( message );
 	    }
-	    else if ( type === "dna_read_error" ) {
+	    else if ( "dna_read_error" in type ) {
 		err			= new DnaReadError( message );
 	    }
-	    else if ( type === "ribosome_error" ) {
+	    else if ( "ribosome_error" in type ) {
 		if ( message.includes("Wasm runtime error while working with Ribosome") && message.includes("error: Deserialize") )
 		    err			= new RibosomeDeserializeError( message, request.args );
 		else
 		    err			= new RibosomeError( message );
 	    }
-	    else if ( type === "activate_app" ) {
+	    else if ( "activate_app" in type ) {
 		err			= new ActivateAppError( message );
 	    }
-	    else if ( type === "zome_call_unauthorized" ) {
+	    else if ( "zome_call_unauthorized" in type ) {
 		err			= new ZomeCallUnauthorizedError( message );
 	    }
 	    else {
