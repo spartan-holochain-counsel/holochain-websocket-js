@@ -1,5 +1,5 @@
 
-export function set_tostringtag ( cls, name ) {
+export function set_tostringtag ( cls, name? ) {
     Object.defineProperty( cls, "name", {
 	value: name || cls.name,
     });

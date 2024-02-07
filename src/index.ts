@@ -50,6 +50,23 @@ const DEFAULT_CONNECTION_OPTIONS	= {
 let connection_id			= 0;
 
 export class Connection extends Emittery {
+    #opened;
+    #closed;
+    #conn_id;
+    #msg_count;
+    #pending;
+    #socket;
+    #new_socket;
+    #uri;
+    #open_f;
+    #open_r;
+    #open;
+    #close;
+    #close_f;
+
+    options: any;
+    name: string;
+
     constructor ( address, options = {} ) {
 	if ( address instanceof Connection )
 	    return address;
@@ -58,14 +75,14 @@ export class Connection extends Emittery {
 
 	this.options			= Object.assign( {}, DEFAULT_CONNECTION_OPTIONS, options );
 
-	this._opened			= false;
-	this._closed			= false;
+	this.#opened			= false;
+	this.#closed			= false;
 
-	this._conn_id			= connection_id++;
-	this.name			= this.options.name ? `${this._conn_id}:` + this.options.name : String( this._conn_id );
+	this.#conn_id			= connection_id++;
+	this.name			= this.options.name ? `${this.#conn_id}:` + this.options.name : String( this.#conn_id );
 
-	this._msg_count			= 0;
-	this._pending			= {};
+	this.#msg_count			= 0;
+	this.#pending			= {};
 
 	const uri_scheme		= this.options.secure === true ? "wss://" : "ws://";
 	// `address` could be
@@ -77,64 +94,64 @@ export class Connection extends Emittery {
 	// Where the scheme will be prepended for 1 and 2 as "ws://"
 	// - or "wss://" if options.secure is true)
 	//
-	this._socket			= null;
-	this._new_socket		= false;
+	this.#socket			= null;
+	this.#new_socket		= false;
 
 	if ( address instanceof WebSocket ) {
-	    this._socket		= address;
-	    this._uri			= this._socket.url;
+	    this.#socket		= address;
+	    this.#uri			= this.#socket.url;
 
 	    // check websocket binarytype
-	    if ( this._socket.binaryType !== "arraybuffer" )
-		throw new TypeError(`The given WebSocket connection must have 'binaryType' set to 'arraybuffer'; not '${this._socket.binaryType}'`);
+	    if ( this.#socket.binaryType !== "arraybuffer" )
+		throw new TypeError(`The given WebSocket connection must have 'binaryType' set to 'arraybuffer'; not '${this.#socket.binaryType}'`);
 	}
 	else {
 	    if ( typeof address === "number" ) {
 		if ( ! (address > 0 && address < 65_536) )
 		    throw new SyntaxError(`Invalid port: ${address}; must be between 1..65536`);
 
-		this._uri			= uri_scheme + `${this.options.host}:${address}`;
+		this.#uri			= uri_scheme + `${this.options.host}:${address}`;
 	    }
 	    else if ( typeof address === "string" ) {
 		if ( uri_scheme_regexp.test( address ) )
-		    this._uri		= address;
+		    this.#uri		= address;
 		else
-		    this._uri		= uri_scheme + address;
+		    this.#uri		= uri_scheme + address;
 	    }
 	    else
 		throw new TypeError(`Invalid address input: ${typeof address}; expected number or string`);
 
-	    new URL( this._uri ); // Check if valid URI
+	    new URL( this.#uri ); // Check if valid URI
 
 	    try {
-		log.debug && this._log("Opening connection to: %s", this._uri );
+		log.debug && this.#log("Opening connection to: %s", this.#uri );
 
-		this._new_socket	= true;
-		this._socket		= new WebSocket( this._uri );
-		this._socket.binaryType	= "arraybuffer";
+		this.#new_socket	= true;
+		this.#socket		= new WebSocket( this.#uri );
+		this.#socket.binaryType	= "arraybuffer";
 
-		log.debug && this._log("Initialized new Connection()");
+		log.debug && this.#log("Initialized new Connection()");
 	    } catch (err) {
 		console.error(err);
-		this._open_r(err);
+		this.#open_r(err);
 	    }
 	}
 
-	this._open			= new Promise( (f,r) => {
-	    this._open_f		= f;
-	    this._open_r		= r;
+	this.#open			= new Promise( (f,r) => {
+	    this.#open_f		= f;
+	    this.#open_r		= r;
 	});
 
-	this._close			= new Promise( f => {
-	    this._close_f		= f;
+	this.#close			= new Promise( f => {
+	    this.#close_f		= f;
 	});
 
 	const open_error		= new Error("");
 
-	this._socket.onerror		= ( event ) => {
-	    if ( this._opened === false ) {
+	this.#socket.onerror		= ( event ) => {
+	    if ( this.#opened === false ) {
 		open_error.message	= `Failed to open WebSocket(${event.target.url}): ${event.message}`;
-		this._open_r( open_error );
+		this.#open_r( open_error );
 	    }
 	    else {
 		console.error(`${this} socket error:`, event.error );
@@ -142,35 +159,35 @@ export class Connection extends Emittery {
 	    }
 	};
 
-	this._socket.onopen		= () => {
-	    log.debug && this._log("Received 'open' event");
-	    this._opened		= true;
-	    this._open_f();
+	this.#socket.onopen		= () => {
+	    log.debug && this.#log("Received 'open' event");
+	    this.#opened		= true;
+	    this.#open_f();
 	};
-	if ( this._socket.readyState === this._socket.OPEN )
-	    this._open_f();
+	if ( this.#socket.readyState === this.#socket.OPEN )
+	    this.#open_f();
 
-	this._socket.onclose		= ( event ) => {
-	    log.debug && this._log("Received 'close' event (code: %s): %s", event.code, event.reason );
-	    this._closed		= true;
-	    this._close_f( event.code );
+	this.#socket.onclose		= ( event ) => {
+	    log.debug && this.#log("Received 'close' event (code: %s): %s", event.code, event.reason );
+	    this.#closed		= true;
+	    this.#close_f( event.code );
 	};
 
-	this._socket.onmessage		= ( event ) => {
-	    this._message_handler( event.data );
+	this.#socket.onmessage		= ( event ) => {
+	    this.#message_handler( event.data );
 	};
     }
 
     get id () {
-	return this._conn_id;
+	return this.#conn_id;
     }
 
     get uri () {
-	return this._uri;
+	return this.#uri;
     }
 
     get readyState () {
-	return this._socket.readyState;
+	return this.#socket.readyState;
     }
 
     get state () {
@@ -178,43 +195,44 @@ export class Connection extends Emittery {
     }
 
     get sharedSocket () {
-	return this._new_socket === false;
+	return this.#new_socket === false;
     }
 
     get messageCount () {
-	return this._msg_count;
+	return this.#msg_count;
     }
 
     get pendingCount () {
-	return Object.keys( this._pending ).length;
+	return Object.keys( this.#pending ).length;
     }
 
-    open ( timeout ) {
+    open ( timeout? ) {
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;
 
-	return new PromiseTimeout( this._open.then.bind(this._open), timeout, "open WebSocket" );
+	return new PromiseTimeout( this.#open.then.bind(this.#open), timeout, "open WebSocket" );
     }
 
-    close ( timeout ) {
-	if ( this._new_socket === false )
+    close ( timeout? ) {
+	if ( this.#new_socket === false )
 	    throw new Error(`The WebSocket was not created by this Connection instance`);
 
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;
 
-	log.debug && this._log("Closing connection on puprose");
-	this._socket.close( 1000, "I'm done with this socket" );
+	log.debug && this.#log("Closing connection on puprose");
+	this.#socket.close( 1000, "I'm done with this socket" );
 
-	return new PromiseTimeout( this._close.then.bind(this._close), timeout, "close WebSocket" );
+	return new PromiseTimeout( this.#close.then.bind(this.#close), timeout, "close WebSocket" );
     }
 
-    async send ( type, payload, id ) {
-	if ( this._socket === null )
+    async send ( send_type, payload, id ) {
+	if ( this.#socket === null )
 	    throw new Error(`Cannot send message until socket is open: ${this}`);
 
 	const msg			= {
-	    "type":	type,
+	    "id":	undefined,
+	    "type":	send_type,
 	    "data":	encode( payload ),
 	};
 
@@ -223,13 +241,13 @@ export class Connection extends Emittery {
 
 	const packed_msg		= encode( msg );
 
-	log.debug && this._log("Ready state '%s'", this._socket.readyState );
-	if ( this._socket.readyState !== this._socket.OPEN ) {
+	log.debug && this.#log("Ready state '%s'", this.#socket.readyState );
+	if ( this.#socket.readyState !== this.#socket.OPEN ) {
 	    await this.open();
 	    // throw new Error(`${this} => Socket is not open`);
 	}
 
-	this._socket.send( packed_msg );
+	this.#socket.send( packed_msg );
     }
 
     request ( method, args = null, timeout ) {
@@ -244,9 +262,9 @@ export class Connection extends Emittery {
 	const stack			= (new Error("")).stack.split("\n").slice(1).join("\n");
 
 	return new PromiseTimeout( (f,r) => {
-	    const id			= this._msg_count++;
+	    const id			= this.#msg_count++;
 
-	    this._pending[id]		= {
+	    this.#pending[id]		= {
 		method,
 		args,
 		"resolve": f,
@@ -258,21 +276,21 @@ export class Connection extends Emittery {
 	}, timeout, `get response for request '${method}'` );
     }
 
-    _log ( msg, ...args ) {
+    #log ( msg, ...args ) {
 	log(`${this} => ${msg}`, ...args );
     }
 
-    async _message_handler ( packed_msg ) {
+    async #message_handler ( packed_msg ) {
 	try {
-	    log.debug && this._log("WebSocket message: %s bytes", packed_msg.byteLength );
-	    let msg			= decode( packed_msg );
+	    log.debug && this.#log("WebSocket message: %s bytes", packed_msg.byteLength );
+	    let msg			= decode( packed_msg ) as any;
 
-	    log.debug && this._log("Message type '%s': { %s }", msg.type, Object.keys(msg).join(", ") );
+	    log.debug && this.#log("Message type '%s': { %s }", msg.type, Object.keys(msg).join(", ") );
 
 	    if ( msg.type === "response" )
-		await this._handle_response( msg );
+		await this.#handle_response( msg );
 	    else if ( msg.type === "signal" )
-		await this._handle_signal( msg );
+		await this.#handle_signal( msg );
 	    else
 		console.error("Unknown message type:", msg.type, msg );
 	} catch (err) {
@@ -280,8 +298,8 @@ export class Connection extends Emittery {
 	}
     }
 
-    async _handle_signal ( message ) {
-	const payload			= decode( message.data );
+    async #handle_signal ( message ) {
+	const payload			= decode( message.data ) as any;
 	// console.log( payload );
 
 	if ( payload.System ) {
@@ -296,7 +314,7 @@ export class Connection extends Emittery {
 
 	const cell_id			= app_signal.cell_id;
 	const zome_name			= app_signal.zome_name;
-	const signal			= decode( app_signal.signal );
+	const signal			= decode( app_signal.signal ) as any;
 	// console.log( signal );
 
 	const sig_type			= signal.type;
@@ -315,11 +333,11 @@ export class Connection extends Emittery {
 	});
     }
 
-    async _handle_response ( response ) {
+    async #handle_response ( response ) {
 	const id			= response.id;
-	const request			= this._pending[id];
+	const request			= this.#pending[id];
 
-	delete this._pending[id];
+	delete this.#pending[id];
 
 	if ( [ null, undefined ].includes( response.data ) )
 	    throw new Error(`Response cancelled by Conductor`);
@@ -328,15 +346,15 @@ export class Connection extends Emittery {
 	    throw new Error(`There is no pending request for response ID: ${id}`);
 
 	if ( typeof request.resolve !== "function" )
-	    throw new Error(`Broken state: pending request value is not a function: ${typeof f}`);
+	    throw new Error(`Broken state: pending request value is not a function: ${typeof request.resolve}`);
 
-	const payload			= decode( response.data );
-	log.debug && this._log("Response payload type '%s': { %s }", payload.type, Object.keys(payload).join(", ") );
+	const payload			= decode( response.data ) as any;
+	log.debug && this.#log("Response payload type '%s': { %s }", payload.type, Object.keys(payload).join(", ") );
 
 	if ( "error" in payload.type ) {
 	    const type			= payload.data.type;
 	    const message		= payload.data.data;
-	    log.debug && this._log("Response error type '%s': { %s }", type, Object.keys(payload.data).join(", ") );
+	    log.debug && this.#log("Response error type '%s': { %s }", type, Object.keys(payload.data).join(", ") );
 
 	    let err			= new Error( message );
 	    if ( "internal_error" in type ) {
@@ -367,7 +385,7 @@ export class Connection extends Emittery {
 
 	    err.stack			= err.stack.split("\n")[0] + "\n" + request.stack;
 
-	    log.debug && this._log("Calling reject for request %s: %s", id, String(err) );
+	    log.debug && this.#log("Calling reject for request %s: %s", id, String(err) );
 	    return request.reject( err );
 	}
 	else {
@@ -380,8 +398,8 @@ export class Connection extends Emittery {
     }
 
     toString () {
-	let ctx				= this._socket ? `[${ READY_STATES[this._socket.readyState] }]` : "[N/A]";
-	return `${ str_eclipse_end( this.name, 8 ) } ${ str_eclipse_start( this._uri, 25 ) } ${ ctx.padStart(12) }`;
+	let ctx				= this.#socket ? `[${ READY_STATES[this.#socket.readyState] }]` : "[N/A]";
+	return `${ str_eclipse_end( this.name, 8 ) } ${ str_eclipse_start( this.#uri, 25 ) } ${ ctx.padStart(12) }`;
     }
 }
 set_tostringtag( Connection, "Connection" );

@@ -1,13 +1,22 @@
+.PHONY:			FORCE
+
+#
+# Building
+#
+build:			FORCE lib/node.js
+lib/node.js:		node_modules src/*.ts
+	rm -f lib/*.js
+	npx tsc -t es2022 -m es2022 --moduleResolution node --esModuleInterop --outDir lib -d src/node.ts
+
+
 #
 # Project
 #
 package-lock.json:	package.json
-	npm install
 	touch $@
 node_modules:		package-lock.json
 	npm install
 	touch $@
-build:			node_modules
 
 use-local-backdrop:
 	cd tests; npm uninstall @spartan-hc/holochain-backdrop

@@ -3,16 +3,12 @@
   "version": "0.3.0",
   "description": "A Javascript library for communicating with Holochain's Websocket API",
   "type": "module",
-  "main": "src/node.js",
-  "module": "src/index.js",
+  "main": "lib/node.js",
+  "module": "lib/index.js",
   "browser": "dist/holochain-websocket.js",
   "files": [
     "README.md",
-    "src/node.js",
-    "src/index.js",
-    "src/utils.js",
-    "src/errors.js",
-    "src/constants.js",
+    "lib/**",
     "dist/**"
   ],
   "scripts": {
@@ -40,6 +36,7 @@
     "mocha": "^10.1.0",
     "puppeteer": "^19.8.5",
     "tweetnacl": "^1.0.3",
+    "typescript": "^5.3.3",
     "webpack": "^5.76.3",
     "webpack-cli": "^4.7.2",
     "why-is-node-running": "^2.2.0"

@@ -17,7 +17,7 @@ import { Holochain }			from '@spartan-hc/holochain-backdrop';
 import { expect_reject }		from './utils.js';
 import { Connection,
 	 DeserializationError,
-	 TimeoutError }			from '../../src/node.js';
+	 TimeoutError }			from '../../lib/node.js';
 
 
 const TEST_HAPP_PATH			= new URL( "../packs/storage.happ", import.meta.url ).pathname;

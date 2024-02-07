@@ -62,6 +62,10 @@ set_tostringtag( RibosomeError, "RibosomeError" );
 
 // RibosomeError( with "Deserialize" in the message ),
 export class RibosomeDeserializeError extends HolochainClientError {
+    context: any;
+    bytes: Uint8Array;
+    data: any;
+
     constructor( message, zome_call_args ) {
 	const match			= message.match(/Deserialize\(\[(?<bytes>.*)\]\)/);
 	const bytes			= new Uint8Array( match.groups.bytes.split(",") );
