@@ -13,7 +13,7 @@ export default {
     "mode":	MODE,
     "entry": {
 	"main": {
-	    "import":	"./src/index.js",
+	    "import":	"./lib/index.js",
 	    "filename":	`${FILENAME}.${FILEEXT}`,
 	    "library": {
 		"type":	"module",

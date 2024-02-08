@@ -15,8 +15,8 @@ import { HoloHash,
 import { Holochain }			from '@spartan-hc/holochain-backdrop';
 
 import { expect_reject }		from './utils.js';
-import HolochainWebsocket		from '../../src/node.js';
-import { Connection }			from '../../src/node.js';
+import HolochainWebsocket		from '../../lib/node.js';
+import { Connection }			from '../../lib/node.js';
 
 
 const TEST_HAPP_PATH			= new URL( "../packs/storage.happ", import.meta.url ).pathname;
