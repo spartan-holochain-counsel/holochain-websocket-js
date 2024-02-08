@@ -6,6 +6,7 @@ import {
 
 
 export type ConnectionOptions = {
+    name?:	string,
     timeout?:	number,
     host?:	string,
     secure?:	boolean,

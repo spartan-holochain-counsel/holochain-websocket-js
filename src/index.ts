@@ -43,7 +43,7 @@ import {
     ResponseMessage,
     ResponseErrorMessage,
     ResponsePayload,
-}					from './types';
+}					from './types.js';
 
 
 
@@ -84,7 +84,9 @@ export class Connection extends Emittery {
 
 	super();
 
-	this.options			= Object.assign( {}, Connection.DEFAULTS, options );
+	this.options			= Object.assign( {
+	    "name":		Math.random().toString().slice(-6),
+	}, Connection.DEFAULTS, options );
 
 	this.#opened			= false;
 	this.#closed			= false;
@@ -215,6 +217,14 @@ export class Connection extends Emittery {
 
     get pendingCount () : number {
 	return Object.keys( this.#pending ).length;
+    }
+
+    get opened() {
+	return this.#opened;
+    }
+
+    get closed() {
+	return this.#closed;
     }
 
     open ( timeout?: number ) : Promise<void> {
@@ -440,6 +450,8 @@ export {
     ActivateAppError,
     ZomeCallUnauthorizedError,
 };
+
+export * from './types.js';
 
 export default {
     Connection,
