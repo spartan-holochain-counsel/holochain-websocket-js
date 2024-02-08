@@ -17,9 +17,9 @@ import {
     log,
     set_tostringtag,
     str_eclipse_end,
-    str_eclipse_start
+    str_eclipse_start,
+    is_uri,
 }					from './utils.js';
-import { READY_STATES }			from './constants.js';
 
 import {
     HolochainClientError,
@@ -31,54 +31,65 @@ import {
     ActivateAppError,
     ZomeCallUnauthorizedError
 }					from './errors.js';
+import {
+    ConnectionOptions,
+    PendingRequestInfo,
+    PendingRequests,
+    ConductorMessage,
+    SignalSystemMessage,
+    SignalAppMessage,
+    SignalPayload,
+    Signal,
+    ResponseMessage,
+    ResponseErrorMessage,
+    ResponsePayload,
+}					from './types';
 
 
-const uri_scheme_regexp			= /^[A-Za-z0-9.\-+]+\:\/\//;
-
-const WEBSOCKET_READY_STATES		= {
-    "0": "CONNECTING",
-    "1": "OPEN",
-    "2": "CLOSING",
-    "3": "CLOSED",
-};
-const DEFAULT_CONNECTION_OPTIONS	= {
-    "timeout": 15_000,
-    "host": "127.0.0.1",
-    "secure": false,
-};
-
-let connection_id			= 0;
 
 export class Connection extends Emittery {
-    #opened;
-    #closed;
-    #conn_id;
-    #msg_count;
-    #pending;
-    #socket;
-    #new_socket;
-    #uri;
-    #open_f;
-    #open_r;
-    #open;
-    #close;
-    #close_f;
+    static WEBSOCKET_READY_STATES = {
+	"0": "CONNECTING",
+	"1": "OPEN",
+	"2": "CLOSING",
+	"3": "CLOSED",
+    };
+    static DEFAULTS : ConnectionOptions = {
+	"timeout": 15_000,
+	"host": "127.0.0.1",
+	"secure": false,
+    };
+    static #CONNECTION_COUNTER : number = 0;
+
+    #opened:		boolean;
+    #closed:		boolean;
+    #conn_id:		number;
+    #msg_count:		number;
+    #pending:		PendingRequests;
+    #socket:		any | null;
+    #new_socket:	any | boolean;
+    #uri:		string;
+    #open_f:		Function;
+    #open_r:		Function;
+    #open:		Promise<null>;
+    #close:		Promise<null>;
+    #close_f:		Function;
 
     options: any;
     name: string;
 
-    constructor ( address, options = {} ) {
+    constructor ( address, options: ConnectionOptions = {} ) {
 	if ( address instanceof Connection )
 	    return address;
 
 	super();
 
-	this.options			= Object.assign( {}, DEFAULT_CONNECTION_OPTIONS, options );
+	this.options			= Object.assign( {}, Connection.DEFAULTS, options );
 
 	this.#opened			= false;
 	this.#closed			= false;
 
-	this.#conn_id			= connection_id++;
+	this.#conn_id			= Connection.#CONNECTION_COUNTER++;
 	this.name			= this.options.name ? `${this.#conn_id}:` + this.options.name : String( this.#conn_id );
 
 	this.#msg_count			= 0;
@@ -113,7 +124,7 @@ export class Connection extends Emittery {
 		this.#uri			= uri_scheme + `${this.options.host}:${address}`;
 	    }
 	    else if ( typeof address === "string" ) {
-		if ( uri_scheme_regexp.test( address ) )
+		if ( is_uri( address ) )
 		    this.#uri		= address;
 		else
 		    this.#uri		= uri_scheme + address;
@@ -178,42 +189,42 @@ export class Connection extends Emittery {
 	};
     }
 
-    get id () {
+    get id () : number {
 	return this.#conn_id;
     }
 
-    get uri () {
+    get uri () : string {
 	return this.#uri;
     }
 
-    get readyState () {
+    get readyState () : number {
 	return this.#socket.readyState;
     }
 
-    get state () {
-	return WEBSOCKET_READY_STATES[ this.readyState ];
+    get state () : string {
+	return Connection.WEBSOCKET_READY_STATES[ this.readyState ];
     }
 
-    get sharedSocket () {
+    get sharedSocket () : boolean {
 	return this.#new_socket === false;
     }
 
-    get messageCount () {
+    get messageCount () : number {
 	return this.#msg_count;
     }
 
-    get pendingCount () {
+    get pendingCount () : number {
 	return Object.keys( this.#pending ).length;
     }
 
-    open ( timeout? ) {
+    open ( timeout?: number ) : Promise<void> {
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;
 
 	return new PromiseTimeout( this.#open.then.bind(this.#open), timeout, "open WebSocket" );
     }
 
-    close ( timeout? ) {
+    close ( timeout?: number ) : Promise<void> {
 	if ( this.#new_socket === false )
 	    throw new Error(`The WebSocket was not created by this Connection instance`);
 
@@ -226,7 +237,11 @@ export class Connection extends Emittery {
 	return new PromiseTimeout( this.#close.then.bind(this.#close), timeout, "close WebSocket" );
     }
 
-    async send ( send_type, payload, id ) {
+    async send (
+	send_type: string,
+	payload: any,
+	id: number,
+    ) : Promise<void> {
 	if ( this.#socket === null )
 	    throw new Error(`Cannot send message until socket is open: ${this}`);
 
@@ -250,7 +265,11 @@ export class Connection extends Emittery {
 	this.#socket.send( packed_msg );
     }
 
-    request ( method, args = null, timeout ) {
+    request (
+	method: string,
+	args: any = null,
+	timeout: number,
+    ) : Promise<any> {
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;
 
@@ -276,14 +295,17 @@ export class Connection extends Emittery {
 	}, timeout, `get response for request '${method}'` );
     }
 
-    #log ( msg, ...args ) {
+    #log (
+	msg: string,
+	...args: Array<any>
+    ) : void {
 	log(`${this} => ${msg}`, ...args );
     }
 
-    async #message_handler ( packed_msg ) {
+    async #message_handler ( packed_msg: Uint8Array ) : Promise<void> {
 	try {
 	    log.debug && this.#log("WebSocket message: %s bytes", packed_msg.byteLength );
-	    let msg			= decode( packed_msg ) as any;
+	    let msg : ConductorMessage	= decode( packed_msg ) as any;
 
 	    log.debug && this.#log("Message type '%s': { %s }", msg.type, Object.keys(msg).join(", ") );
 
@@ -298,15 +320,15 @@ export class Connection extends Emittery {
 	}
     }
 
-    async #handle_signal ( message ) {
-	const payload			= decode( message.data ) as any;
+    async #handle_signal ( message ) : Promise<void> {
+	const payload : SignalPayload	= decode( message.data ) as any;
 	// console.log( payload );
 
-	if ( payload.System ) {
+	if ( "System" in payload ) {
 	    // Do nothing...
 	    return;
 	}
-	else if ( !payload.App )
+	else if ( !("App" in payload) )
 	    throw new TypeError(`Unknown signal type [${Object.keys(payload).join(", ")}]`);
 
 	// console.log( payload );
@@ -314,7 +336,7 @@ export class Connection extends Emittery {
 
 	const cell_id			= app_signal.cell_id;
 	const zome_name			= app_signal.zome_name;
-	const signal			= decode( app_signal.signal ) as any;
+	const signal : Signal		= decode( app_signal.signal ) as any;
 	// console.log( signal );
 
 	const sig_type			= signal.type;
@@ -333,7 +355,7 @@ export class Connection extends Emittery {
 	});
     }
 
-    async #handle_response ( response ) {
+    async #handle_response ( response ) : Promise<void> {
 	const id			= response.id;
 	const request			= this.#pending[id];
 
@@ -348,7 +370,7 @@ export class Connection extends Emittery {
 	if ( typeof request.resolve !== "function" )
 	    throw new Error(`Broken state: pending request value is not a function: ${typeof request.resolve}`);
 
-	const payload			= decode( response.data ) as any;
+	const payload : ResponsePayload	= decode( response.data ) as any;
 	log.debug && this.#log("Response payload type '%s': { %s }", payload.type, Object.keys(payload).join(", ") );
 
 	if ( "error" in payload.type ) {
@@ -393,16 +415,16 @@ export class Connection extends Emittery {
 	}
     }
 
-    toJSON () {
+    toJSON () : string {
 	return this.toString();
     }
 
-    toString () {
-	let ctx				= this.#socket ? `[${ READY_STATES[this.#socket.readyState] }]` : "[N/A]";
+    toString () : string {
+	let ctx				= this.#socket ? `[${ Connection.WEBSOCKET_READY_STATES[this.#socket.readyState] }]` : "[N/A]";
 	return `${ str_eclipse_end( this.name, 8 ) } ${ str_eclipse_start( this.#uri, 25 ) } ${ ctx.padStart(12) }`;
     }
 }
-set_tostringtag( Connection, "Connection" );
+set_tostringtag( Connection );
 
 
 export {

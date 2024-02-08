@@ -50,15 +50,15 @@ set_tostringtag( ConductorError, "ConductorError" );
 
 // Deserialization(String)
 export class DeserializationError extends HolochainClientError {}
-set_tostringtag( DeserializationError, "DeserializationError" );
+set_tostringtag( DeserializationError );
 
 // DnaReadError(String),
 export class DnaReadError extends HolochainClientError {}
-set_tostringtag( DnaReadError, "DnaReadError" );
+set_tostringtag( DnaReadError );
 
 // RibosomeError(String),
 export class RibosomeError extends HolochainClientError {}
-set_tostringtag( RibosomeError, "RibosomeError" );
+set_tostringtag( RibosomeError );
 
 // RibosomeError( with "Deserialize" in the message ),
 export class RibosomeDeserializeError extends HolochainClientError {
@@ -91,15 +91,15 @@ export class RibosomeDeserializeError extends HolochainClientError {
 	this.data			= decode( bytes );
     }
 }
-set_tostringtag( RibosomeDeserializeError, "RibosomeDeserializeError" );
+set_tostringtag( RibosomeDeserializeError );
 
 // ActivateApp(String),
 export class ActivateAppError extends HolochainClientError {}
-set_tostringtag( ActivateAppError, "ActivateAppError" );
+set_tostringtag( ActivateAppError );
 
 // ZomeCallUnauthorized(String),
 export class ZomeCallUnauthorizedError extends HolochainClientError {}
-set_tostringtag( ZomeCallUnauthorizedError, "ZomeCallUnauthorizedError" );
+set_tostringtag( ZomeCallUnauthorizedError );
 
 
 const ErrorTypes = {
