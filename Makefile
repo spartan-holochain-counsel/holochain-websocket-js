@@ -6,7 +6,8 @@
 build:			FORCE lib/node.js
 lib/node.js:		node_modules src/*.ts
 	rm -f lib/*.js
-	npx tsc -t es2022 -m es2022 --moduleResolution node --esModuleInterop --outDir lib -d src/node.ts
+	npx tsc -t es2022 -m es2022 --moduleResolution node --esModuleInterop \
+		--outDir lib -d --sourceMap src/node.ts
 
 
 #
@@ -26,26 +27,25 @@ use-npm-backdrop:
 	cd tests; npm install --save-dev @spartan-hc/holochain-backdrop
 
 
-MOCHA_OPTS		= -t 15000
 #
 # Testing
 #
+DEBUG_LEVEL	       ?= warn
+TEST_ENV_VARS		= LOG_LEVEL=$(DEBUG_LEVEL)
+MOCHA_OPTS		= -t 15000 -n enable-source-maps
+
 test:				test-integration	test-e2e
 test-debug:			test-integration-debug	test-e2e-debug
 
-test-integration:		build
-	LOG_LEVEL=warn npx mocha $(MOCHA_OPTS) ./tests/integration
-test-integration-debug:		build
-	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/integration
-test-integration-debug-%:	build
-	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/integration/test_$*.js
+test-integration:	build
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration
+test-integration-%:	build
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration/test_$*.js
 
 test-e2e:		prepare-package build
-	LOG_LEVEL=warn npx mocha $(MOCHA_OPTS) ./tests/e2e
-test-e2e-debug:		prepare-package build
-	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/e2e
-test-e2e-debug-%:	prepare-package build
-	LOG_LEVEL=trace npx mocha $(MOCHA_OPTS) ./tests/e2e/test_$*.js
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/e2e
+test-e2e-%:		prepare-package build
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/e2e/test_$*.js
 
 test-server:
 	python3 -m http.server 8765

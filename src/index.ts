@@ -278,7 +278,7 @@ export class Connection extends Emittery {
     request (
 	method: string,
 	args: any = null,
-	timeout: number,
+	timeout?: number,
     ) : Promise<any> {
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;
