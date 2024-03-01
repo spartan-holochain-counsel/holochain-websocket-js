@@ -22,9 +22,10 @@
   },
   "dependencies": {
     "@msgpack/msgpack": "^2.7.0",
-    "@spartan-hc/holo-hash": "^0.5.4",
+    "@spartan-hc/holo-hash": "^0.7.0",
     "@whi/promise-timeout": "^0.1.1",
-    "emittery": "^1.0.1"
+    "emittery": "^1.0.1",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@holochain/serialization": "0.1.0-beta-rc.3",

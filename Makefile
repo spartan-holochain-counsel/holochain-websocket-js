@@ -35,7 +35,6 @@ TEST_ENV_VARS		= LOG_LEVEL=$(DEBUG_LEVEL)
 MOCHA_OPTS		= -t 15000 -n enable-source-maps
 
 test:				test-integration	test-e2e
-test-debug:			test-integration-debug	test-e2e-debug
 
 test-integration:	build
 	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration
