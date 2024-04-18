@@ -47,7 +47,9 @@ function connection_tests () {
 	    const conn			= new Connection( admin_port );
 
 	    try {
-		return await conn.request("attach_app_interface", {} );
+		return await conn.request("attach_app_interface", {
+		    "allowed_origins": "*",
+		});
 	    } finally {
 		await conn.close();
 	    }
@@ -59,12 +61,14 @@ function connection_tests () {
 
     it("should make request using wrapped WebSocket", async function () {
 	let result			= await page.evaluate(async function ( admin_port ) {
-	    const socket		= new WebSocket(`ws://127.0.0.1:${admin_port}`);
+	    const socket		= new WebSocket(`ws://localhost:${admin_port}`);
 	    socket.binaryType		= "arraybuffer";
 	    const conn			= new Connection( socket );
 
 	    try {
-		return await conn.request("attach_app_interface", {} );
+		return await conn.request("attach_app_interface", {
+		    "allowed_origins": "*",
+		});
 	    } finally {
 		socket.close( 1000, "I'm done with this socket" );
 	    }

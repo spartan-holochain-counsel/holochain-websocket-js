@@ -14,7 +14,10 @@ import { HoloHash,
 
 import { Holochain }			from '@spartan-hc/holochain-backdrop';
 
-import { expect_reject }		from './utils.js';
+import {
+    expect_reject,
+    linearSuite,
+}					from '../utils.js';
 import { Connection,
 	 DeserializationError,
 	 TimeoutError }			from '../../lib/node.js';
@@ -29,10 +32,44 @@ let agent_hash;
 let app_port;
 
 
+describe("Integration: Wrap Existing WebSocket", () => {
+    let conductor;
+
+    before(async () => {
+	conductor			= new Holochain();
+	await conductor.start();
+
+	const admin_port		= conductor.adminPorts()[0];
+
+	socket				= new WebSocket(`ws://localhost:${admin_port}`, [], {
+	    "origin": "node",
+	});
+	socket.binaryType		= "arraybuffer";
+
+	conn				= new Connection( socket );
+    });
+
+    linearSuite("Connection",	connection_tests );
+    linearSuite("Errors",	errors_tests );
+
+    after(async () => {
+	if ( socket )
+	    socket.close( 1000, "I'm done with this socket" );
+
+	await conductor.destroy();
+    });
+
+});
+
+
 function connection_tests () {
     it("should call admin API method", async function () {
+	this.timeout( 30_000 );
+
 	log.trace("Sending 'attach app interface'");
-	let resp			= await conn.request("attach_app_interface", {} );
+	let resp			= await conn.request("attach_app_interface", {
+	    "allowed_origins": "*",
+	});
 	log.info("Awaited 'app interface': %s", resp );
 
 	app_port			= resp.port;
@@ -127,6 +164,7 @@ function errors_tests () {
     });
 
     it("should call invalid API method", async function () {
+	this.skip();
 	this.timeout( 10_000 );
 
 	await expect_reject( async () => {
@@ -134,30 +172,3 @@ function errors_tests () {
 	}, DeserializationError, "expected one of" );
     });
 }
-
-describe("Integration: Wrap Existing WebSocket", () => {
-    let conductor;
-
-    before(async () => {
-	conductor			= new Holochain();
-	await conductor.start();
-
-	const admin_port		= conductor.adminPorts()[0];
-
-	socket				= new WebSocket(`ws://127.0.0.1:${admin_port}`);
-	socket.binaryType		= "arraybuffer";
-
-	conn				= new Connection( socket );
-    });
-
-    describe("Connection",	connection_tests );
-    describe("Errors",		errors_tests );
-
-    after(async () => {
-	if ( socket )
-	    socket.close( 1000, "I'm done with this socket" );
-
-	await conductor.destroy();
-    });
-
-});

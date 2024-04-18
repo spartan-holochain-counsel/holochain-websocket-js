@@ -56,7 +56,7 @@ export class Connection extends Emittery {
     };
     static DEFAULTS : ConnectionOptions = {
 	"timeout": 15_000,
-	"host": "127.0.0.1",
+	"host": "localhost",
 	"secure": false,
     };
     static #CONNECTION_COUNTER : number = 0;
@@ -140,7 +140,10 @@ export class Connection extends Emittery {
 		log.debug && this.#log("Opening connection to: %s", this.#uri );
 
 		this.#new_socket	= true;
-		this.#socket		= new WebSocket( this.#uri );
+		// @ts-ignore
+		this.#socket		= new WebSocket( this.#uri, [], {
+		    "origin": "node",
+		});
 		this.#socket.binaryType	= "arraybuffer";
 
 		log.debug && this.#log("Initialized new Connection()");
