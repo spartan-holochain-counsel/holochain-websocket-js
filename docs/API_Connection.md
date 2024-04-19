@@ -55,6 +55,13 @@ await conn.close();
 ```
 
 
+### `<Connection>.flush() -> number`
+End all pending requests with an promise rejection.
+
+Returns the number of pending requests that were rejected.
+
+
+
 ### `<Connection>.send( type, payload, id ) -> undefined`
 Send a `Request` type message and a await for the corresponding `Response` message.
 

@@ -187,6 +187,7 @@ export class Connection extends Emittery {
 	    log.debug && this.#log("Received 'close' event (code: %s): %s", event.code, event.reason );
 	    this.#closed		= true;
 	    this.#close_f( event.code );
+	    this.flush();
 	};
 
 	this.#socket.onmessage		= ( event ) => {
@@ -250,10 +251,22 @@ export class Connection extends Emittery {
 	return new PromiseTimeout( this.#close.then.bind(this.#close), timeout, "close WebSocket" );
     }
 
+    flush () {
+	const pending_count		= this.pendingCount;
+
+	for ( let id in this.#pending ) {
+	    this.#pending[id].reject(
+		new Error(`Connection has been flushed`)
+	    );
+	}
+
+	return pending_count;
+    }
+
     async send (
-	send_type: string,
-	payload: any,
-	id: number,
+	send_type		: string,
+	payload			: any,
+	id			: number,
     ) : Promise<void> {
 	if ( this.#socket === null )
 	    throw new Error(`Cannot send message until socket is open: ${this}`);
@@ -279,9 +292,9 @@ export class Connection extends Emittery {
     }
 
     request (
-	method: string,
-	args: any = null,
-	timeout?: number,
+	method			: string,
+	args			: any = null,
+	timeout		       ?: number,
     ) : Promise<any> {
 	if ( timeout === undefined )
 	    timeout			= this.options.timeout;

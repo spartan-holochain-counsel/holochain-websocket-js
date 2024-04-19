@@ -196,12 +196,12 @@ function errors_tests () {
     });
 
     it("should call invalid API method", async function () {
-	this.skip();
 	this.timeout( 30_000 );
 
 	await expect_reject( async () => {
 	    await conn.request("invalid_api_endpoint");
-	}, HolochainWebsocket.DeserializationError, "expected one of" );
+	}, "Connection has been flushed" );
+	// }, HolochainWebsocket.DeserializationError, "expected one of" );
     });
 
     // Connection: undefined payload for type Request

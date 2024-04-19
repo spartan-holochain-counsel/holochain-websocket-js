@@ -164,11 +164,11 @@ function errors_tests () {
     });
 
     it("should call invalid API method", async function () {
-	this.skip();
 	this.timeout( 10_000 );
 
 	await expect_reject( async () => {
 	    await conn.request("invalid_api_endpoint");
-	}, DeserializationError, "expected one of" );
+	}, "Connection has been flushed" );
+	// }, DeserializationError, "expected one of" );
     });
 }
