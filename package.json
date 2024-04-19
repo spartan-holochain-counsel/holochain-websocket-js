@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@holochain/serialization": "0.1.0-beta-rc.3",
-    "@spartan-hc/holochain-backdrop": "file:../node-holochain-backdrop",
+    "@spartan-hc/holochain-backdrop": "^4.1.0",
     "@whi/http": "^0.2.3",
     "@whi/json": "^0.1.3",
     "@whi/weblogger": "^0.1.6",
