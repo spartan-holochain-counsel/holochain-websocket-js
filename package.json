@@ -28,9 +28,8 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
-    "@holochain/serialization": "0.1.0-beta-rc.3",
+    "@holochain/serialization": "^0.1.0-beta-rc.3",
     "@spartan-hc/holochain-backdrop": "^4.2.0",
-    "@spartan-hc/holochain-serialization": "^0.2.0",
     "@whi/http": "^0.2.3",
     "@whi/json": "^0.1.7",
     "@whi/weblogger": "^0.4.0",

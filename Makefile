@@ -29,9 +29,8 @@ npm-reinstall-dev-public:
 	cd tests; npm uninstall $(NPM_PACKAGE); npm i --save-dev $(NPM_PACKAGE)
 
 npm-use-serialization-public:
-npm-use-serialization-local:
 npm-use-serialization-%:
-	NPM_PACKAGE=@spartan-hc/holochain-serialization LOCAL_PATH=../../hc-serialization-js make npm-reinstall-dev-$*
+	NPM_PACKAGE=@holochain/serialization make npm-reinstall-dev-$*
 
 npm-use-backdrop-public:
 npm-use-backdrop-local:
