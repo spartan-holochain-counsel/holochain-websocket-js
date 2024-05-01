@@ -19,12 +19,24 @@ node_modules:		package-lock.json
 	npm install
 	touch $@
 
-use-local-backdrop:
-	cd tests; npm uninstall @spartan-hc/holochain-backdrop
-	cd tests; npm install --save-dev ../../node-holochain-backdrop/
-use-npm-backdrop:
-	cd tests; npm uninstall @spartan-hc/holochain-backdrop
-	cd tests; npm install --save-dev @spartan-hc/holochain-backdrop
+npm-reinstall-local:
+	cd tests; npm uninstall $(NPM_PACKAGE); npm i --save $(LOCAL_PATH)
+npm-reinstall-public:
+	cd tests; npm uninstall $(NPM_PACKAGE); npm i --save $(NPM_PACKAGE)
+npm-reinstall-dev-local:
+	cd tests; npm uninstall $(NPM_PACKAGE); npm i --save-dev $(LOCAL_PATH)
+npm-reinstall-dev-public:
+	cd tests; npm uninstall $(NPM_PACKAGE); npm i --save-dev $(NPM_PACKAGE)
+
+npm-use-serialization-public:
+npm-use-serialization-local:
+npm-use-serialization-%:
+	NPM_PACKAGE=@spartan-hc/holochain-serialization LOCAL_PATH=../../hc-serialization-js make npm-reinstall-dev-$*
+
+npm-use-backdrop-public:
+npm-use-backdrop-local:
+npm-use-backdrop-%:
+	NPM_PACKAGE=@spartan-hc/holochain-backdrop LOCAL_PATH=../../node-backdrop make npm-reinstall-dev-$*
 
 
 #
@@ -34,17 +46,24 @@ DEBUG_LEVEL	       ?= warn
 TEST_ENV_VARS		= LOG_LEVEL=$(DEBUG_LEVEL)
 MOCHA_OPTS		= -t 15000 -n enable-source-maps
 
-test:				test-integration	test-e2e
+test:
+	make -s test-integration
+	make -s test-e2e
 
-test-integration:	build
-	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration
-test-integration-%:	build
-	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration/test_$*.js
+test-integration:
+	make -s test-integration-basic
+	make -s test-integration-wrapping
 
-test-e2e:		prepare-package build
-	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/e2e
-test-e2e-%:		prepare-package build
-	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/e2e/test_$*.js
+test-integration-basic:		build
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration/test_basic.js
+test-integration-wrapping:	build
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/integration/test_wrapping.js
+
+test-e2e:
+	make -s test-e2e-basic
+
+test-e2e-basic:			prepare-package build
+	$(TEST_ENV_VARS) npx mocha $(MOCHA_OPTS) ./tests/e2e/test_basic.js
 
 test-server:
 	python3 -m http.server 8765

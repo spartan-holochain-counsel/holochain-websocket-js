@@ -266,7 +266,7 @@ export class Connection extends Emittery {
     async send (
 	send_type		: string,
 	payload			: any,
-	id			: number,
+	id		       ?: number,
     ) : Promise<void> {
 	if ( this.#socket === null )
 	    throw new Error(`Cannot send message until socket is open: ${this}`);
@@ -289,6 +289,25 @@ export class Connection extends Emittery {
 	}
 
 	this.#socket.send( packed_msg );
+    }
+
+    async authenticate (
+	token			: Uint8Array,
+    ) : Promise<void> {
+	if ( [null, undefined].includes( token ) )
+	    throw new Error(`Missing authentication token`);
+
+	if ( !(token instanceof Uint8Array) )
+	    throw new TypeError(`Authentication token must be a Uint8Array; not type '${(token as any)?.constructor?.name || typeof token}'`);
+
+	await this.open();
+
+	// Authenticate input requires the token to be an Array
+	const token_input		= [ ...token ];
+
+	await this.send( "authenticate", {
+	    "token": token_input,
+	});
     }
 
     request (

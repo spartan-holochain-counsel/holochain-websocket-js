@@ -28,17 +28,17 @@ const TEST_APP_ID			= "test-app";
 let conn, admin_port;
 let dna_hash;
 let agent_hash;
-let app_port;
+let holochain;
+let app_port, auth;
 
 
 describe("Integration: Connection", () => {
-    let conductor;
 
     before(async () => {
-	conductor			= new Holochain();
-	await conductor.start();
+	holochain			= new Holochain();
+	await holochain.start();
 
-	admin_port			= conductor.adminPorts()[0];
+	admin_port			= holochain.adminPorts()[0];
 	conn				= new Connection( admin_port );
 
 	await conn.open();
@@ -55,7 +55,7 @@ describe("Integration: Connection", () => {
     });
 
     after(async () => {
-	await conductor.destroy();
+	await holochain.destroy();
     });
 
 });
@@ -112,6 +112,11 @@ function connection_tests () {
 	    "installed_app_id": TEST_APP_ID,
 	});
 	log.normal("Enable app");
+
+	auth				= await holochain.admin.issueAppAuthenticationToken({
+	    "installed_app_id":		TEST_APP_ID,
+	    "single_use":		false,
+	});
     });
 
     it("should grant unrestricted zome calling for all functions", async function () {
@@ -130,16 +135,15 @@ function connection_tests () {
     });
 
     it("should call zome function via app interface", async function () {
-	this.skip(); // TODO: update happ dependency so this test can pass
 	this.timeout( 5_000 );
 
 	const key_pair			= nacl.sign.keyPair();
 	const zome_call_request		= {
 	    "cap":		null,
 	    "cell_id":		[ dna_hash, agent_hash ],
-	    "zome_name":	"mere_memory", // if the zome doesn't exist it never responds
-	    "fn_name":		"save_bytes", // if the function doesn't exist it is RibosomeError
-	    "payload":		encode( Buffer.from("Super important bytes") ),
+	    "zome_name":	"mere_memory_api",
+	    "fn_name":		"make_hash_path",
+	    "payload":		encode( "hello.world" ),
 	    "provenance":	new AgentPubKey( key_pair.publicKey ),
 	    "nonce":		nacl.randomBytes( 32 ),
 	    "expires_at":	(Date.now() + (5 * 60 * 1_000)) * 1_000,
@@ -149,16 +153,15 @@ function connection_tests () {
 	zome_call_request.signature	= nacl.sign( zome_call_hash, key_pair.secretKey )
 	    .subarray( 0, nacl.sign.signatureLength );
 
-	const app			= new Connection( app_port );
-	await app.open();
+	const app_conn			= new Connection( app_port );
+	await app_conn.authenticate( auth.token );
 
 	try {
-	    let resp			= await app.request("call_zome", zome_call_request );
+	    let resp			= await app_conn.request("call_zome", zome_call_request );
 	    let essence			= decode( resp );
-	    let result			= new HoloHash( essence.payload );
-	    log.normal("Save bytes response: %s", result );
+	    log.normal("Make hash Path response: %s", essence.payload );
 	} finally {
-	    await app.close();
+	    await app_conn.close();
 	}
     });
 }
