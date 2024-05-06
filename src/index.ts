@@ -418,7 +418,6 @@ export class Connection extends Emittery {
 	const payload : ResponsePayload	= decode( response.data ) as any;
 	log.debug && this.#log("Response payload type '%s': { %s }", payload.type, Object.keys(payload).join(", ") );
 
-	console.log( payload );
 	if ( payload.type === "error" ) {
 	    const error_type		= payload.data.type;
 	    const message		= payload.data.data;
