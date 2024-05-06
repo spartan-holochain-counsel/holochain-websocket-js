@@ -46,11 +46,11 @@ export type Signal = {
 };
 
 export type ResponseMessage = {
-    type: { success: null },
+    type: string,
     data: any,
 };
 export type ResponseErrorMessage = {
-    type: { error: null },
+    type: string,
     data: {
 	type: string,
 	data: any,

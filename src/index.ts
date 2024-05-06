@@ -418,36 +418,37 @@ export class Connection extends Emittery {
 	const payload : ResponsePayload	= decode( response.data ) as any;
 	log.debug && this.#log("Response payload type '%s': { %s }", payload.type, Object.keys(payload).join(", ") );
 
-	if ( "error" in payload.type ) {
-	    const type			= payload.data.type;
+	console.log( payload );
+	if ( payload.type === "error" ) {
+	    const error_type		= payload.data.type;
 	    const message		= payload.data.data;
-	    log.debug && this.#log("Response error type '%s': { %s }", type, Object.keys(payload.data).join(", ") );
+	    log.debug && this.#log("Response error type '%s': { %s }", error_type, Object.keys(payload.data).join(", ") );
 
 	    let err			= new Error( message );
-	    if ( "internal_error" in type ) {
+	    if ( error_type === "internal_error" ) {
 		err			= new ConductorError( message );
 	    }
-	    else if ( "deserialization" in type ) {
+	    else if ( error_type === "deserialization" ) {
 		err			= new DeserializationError( message );
 	    }
-	    else if ( "dna_read_error" in type ) {
+	    else if ( error_type === "dna_read_error" ) {
 		err			= new DnaReadError( message );
 	    }
-	    else if ( "ribosome_error" in type ) {
+	    else if ( error_type === "ribosome_error" ) {
 		if ( message.includes("Wasm runtime error while working with Ribosome") && message.includes("error: Deserialize") )
 		    err			= new RibosomeDeserializeError( message, request.args );
 		else
 		    err			= new RibosomeError( message );
 	    }
-	    else if ( "activate_app" in type ) {
+	    else if ( error_type === "activate_app" ) {
 		err			= new ActivateAppError( message );
 	    }
-	    else if ( "zome_call_unauthorized" in type ) {
+	    else if ( error_type === "zome_call_unauthorized" ) {
 		err			= new ZomeCallUnauthorizedError( message );
 	    }
 	    else {
 		// Unknown
-		console.error("Unknown error type: %s", type );
+		console.error("Unknown error type: %s", error_type );
 	    }
 
 	    err.stack			= err.stack.split("\n")[0] + "\n" + request.stack;
