@@ -24,12 +24,14 @@
     "@msgpack/msgpack": "^2.7.0",
     "@spartan-hc/holo-hash": "^0.7.0",
     "@whi/promise-timeout": "^0.1.1",
+    "defaults": "^3.0.0",
     "emittery": "^1.0.1",
     "ws": "^8.16.0"
   },
   "devDependencies": {
     "@holochain/serialization": "^0.1.0-beta-rc.3",
     "@spartan-hc/holochain-backdrop": "file:../node-backdrop",
+    "@types/ws": "^8.5.10",
     "@whi/http": "^0.2.3",
     "@whi/json": "^0.1.7",
     "@whi/weblogger": "^0.4.0",

@@ -1,15 +1,19 @@
 
 import {
+    ClientOptions,
+}					from 'ws';
+import {
     DnaHash,
     AgentPubKey,
 }					from '@spartan-hc/holo-hash';
 
 
 export type ConnectionOptions = {
-    name?:	string,
-    timeout?:	number,
-    host?:	string,
-    secure?:	boolean,
+    name?:		string,
+    timeout?:		number,
+    host?:		string,
+    secure?:		boolean,
+    ws_options?:	ClientOptions,
 };
 
 export type PendingRequestInfo = {

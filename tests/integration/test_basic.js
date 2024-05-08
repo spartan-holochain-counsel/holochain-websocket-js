@@ -39,7 +39,11 @@ describe("Integration: Connection", () => {
 	await holochain.start();
 
 	admin_port			= holochain.adminPorts()[0];
-	conn				= new Connection( admin_port );
+	conn				= new Connection( admin_port, {
+	    "ws_options": {
+		"maxPayload": 100e6, // 100mb
+	    },
+	});
 
 	await conn.open();
 	log.trace("%s => Connection is open", conn.toString() );
@@ -63,13 +67,17 @@ describe("Integration: Connection", () => {
 
 function connection_tests () {
     it("should check inspection methods", async function () {
-	// expect( conn.id			).to.equal( 0 );
+	expect( conn.id			).to.equal( 0 );
 	expect( conn.uri		).to.equal( `ws://localhost:${admin_port}` );
 	expect( conn.readyState		).to.equal( 1 );
 	expect( conn.state		).to.equal( "OPEN" );
 	expect( conn.sharedSocket	).to.be.false;
 	expect( conn.messageCount	).to.equal( 0 );
 	expect( conn.pendingCount	).to.equal( 0 );
+	expect( conn.options.ws_options	).to.deep.equal({
+	    "origin": "node",
+	    "maxPayload": 100e6,
+	});
     });
 
     it("should call admin API method", async function () {

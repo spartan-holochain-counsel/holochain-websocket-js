@@ -1,5 +1,6 @@
 
 import Emittery				from 'emittery';
+import defaults				from 'defaults';
 import {
     encode,
     decode,
@@ -58,6 +59,9 @@ export class Connection extends Emittery {
 	"timeout": 15_000,
 	"host": "localhost",
 	"secure": false,
+	"ws_options": {
+	    "origin": "node",
+	},
     };
     static #CONNECTION_COUNTER : number = 0;
 
@@ -84,9 +88,10 @@ export class Connection extends Emittery {
 
 	super();
 
-	this.options			= Object.assign( {
+	this.options			= defaults({
 	    "name":		Math.random().toString().slice(-6),
-	}, Connection.DEFAULTS, options );
+	    ...options,
+	}, Connection.DEFAULTS );
 
 	this.#opened			= false;
 	this.#closed			= false;
@@ -141,9 +146,7 @@ export class Connection extends Emittery {
 
 		this.#new_socket	= true;
 		// @ts-ignore
-		this.#socket		= new WebSocket( this.#uri, [], {
-		    "origin": "node",
-		});
+		this.#socket		= new WebSocket( this.#uri, [], this.options.ws_options );
 		this.#socket.binaryType	= "arraybuffer";
 
 		log.debug && this.#log("Initialized new Connection()");
