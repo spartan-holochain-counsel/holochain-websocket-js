@@ -1,9 +1,9 @@
 
-import WebSocket			from 'ws';
-import HolochainWebsocket		from './index.js';
+import WebSocket                        from 'ws';
+import HolochainWebsocket               from './index.js';
 
 // @ts-ignore
-global.WebSocket			= WebSocket;
+global.WebSocket                        = WebSocket;
 
-export *				from './index.js';
+export *                                from './index.js';
 export default HolochainWebsocket;
