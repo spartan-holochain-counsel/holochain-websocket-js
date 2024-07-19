@@ -1,15 +1,13 @@
 import { Logger }			from '@whi/weblogger';
 const log				= new Logger("test-e2e", process.env.LOG_LEVEL );
 
-
 import why				from 'why-is-node-running';
 
 import { expect }			from 'chai';
-
 import puppeteer			from 'puppeteer';
-import http				from '@whi/http';
 
 import { Holochain }			from '@spartan-hc/holochain-backdrop';
+import { createFileServer }		from '../utils.js';
 
 
 const HTTP_PORT				= 2222;
@@ -93,8 +91,9 @@ describe("E2E: Holochain WebSocket", () => {
 	admin_port			= conductor.adminPorts()[0];
 
 	browser				= await puppeteer.launch();
-	server				= new http.server();
-	server.serve_local_assets( new URL( "../../", import.meta.url ).pathname );
+        server				= createFileServer(
+            new URL( "../../", import.meta.url ).pathname,
+        );
 	server.listen( HTTP_PORT )
 
 	const test_url			= `http://localhost:${HTTP_PORT}/tests/e2e/index.html`;
