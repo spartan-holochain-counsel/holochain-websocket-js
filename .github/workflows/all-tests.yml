@@ -30,9 +30,9 @@ jobs:
         run: |
           output=$(DEBUG_LEVEL=trace nix develop --command bash -c 'make test | tee >(cat >&2); exit ${PIPESTATUS[0]}');
           if [ ${PIPESTATUS[0]} -ne 0 ]; then exit ${PIPESTATUS[0]}; fi
-          passing=$(echo "$output" | grep -oP '\d+ passing' | grep -oP '\d+' || echo 0)
-          failing=$(echo "$output" | grep -oP '\d+ failing' | grep -oP '\d+' || echo 0)
-          pending=$(echo "$output" | grep -oP '\d+ pending' | grep -oP '\d+' || echo 0)
+          passing=$(echo "$output" | grep -oP '\d+ passing' | grep -oP '\d+' | awk '{sum+=$1} END {print sum}')
+          failing=$(echo "$output" | grep -oP '\d+ failing' | grep -oP '\d+' | awk '{sum+=$1} END {print sum}')
+          pending=$(echo "$output" | grep -oP '\d+ pending' | grep -oP '\d+' | awk '{sum+=$1} END {print sum}')
           echo "## Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Passed   | Failed   | Pending  |" >> $GITHUB_STEP_SUMMARY

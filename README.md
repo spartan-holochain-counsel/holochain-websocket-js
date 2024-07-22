@@ -1,6 +1,6 @@
 [![](https://img.shields.io/npm/v/@spartan-hc/holochain-websocket/latest?style=flat-square)](http://npmjs.com/package/@spartan-hc/holochain-websocket)
 
-# Holochain Client
+# Holochain WebSocket Client
 A Javascript library for communicating with [Holochain](https://holochain.org)'s Websocket API
 
 [![](https://img.shields.io/github/issues-raw/spartan-holochain-counsel/holochain-websocket-js?style=flat-square)](https://github.com/spartan-holochain-counsel/holochain-websocket-js/issues)
