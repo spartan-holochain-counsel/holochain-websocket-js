@@ -286,10 +286,11 @@ export class Connection extends Emittery {
         const packed_msg                = encode( msg );
 
         log.debug && this.#log("Ready state '%s'", this.#socket.readyState );
-        if ( this.#socket.readyState !== this.#socket.OPEN ) {
+        if ( this.#socket.readyState === this.#socket.CONNECTING )
             await this.open();
-            // throw new Error(`${this} => Socket is not open`);
-        }
+
+        if ( [ this.#socket.CLOSED, this.#socket.CLOSING ].includes( this.#socket.readyState ) )
+            throw new Error(`Socket is already closed`);
 
         this.#socket.send( packed_msg );
     }

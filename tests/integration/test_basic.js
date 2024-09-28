@@ -149,7 +149,7 @@ function connection_tests () {
         const zome_call_request         = {
             "cap":              null,
             "cell_id":          [ dna_hash, agent_hash ],
-            "zome_name":        "mere_memory_api",
+            "zome_name":        "mere_memory_csr",
             "fn_name":          "make_hash_path",
             "payload":          encode( "hello.world" ),
             "provenance":       new AgentPubKey( key_pair.publicKey ),
@@ -213,6 +213,16 @@ function errors_tests () {
             await conn.request("invalid_api_endpoint");
         }, "Connection has been flushed" );
         // }, HolochainWebsocket.DeserializationError, "expected one of" );
+    });
+
+    it("should fail to call zome function after closed", async function () {
+        const conn                      = new Connection( app_port );
+        await conn.authenticate( auth.token );
+        await conn.close();
+
+        await expect_reject( async () => {
+            await conn.request("attach_app_interface");
+        }, "Socket is already closed" );
     });
 
     // Connection: undefined payload for type Request
